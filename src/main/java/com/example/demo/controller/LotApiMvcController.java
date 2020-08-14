@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
@@ -8,6 +9,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Controller
@@ -18,6 +24,7 @@ public class LotApiMvcController {
 
     @Autowired
     RestTemplate restTemplate;
+
     public LotApiMvcController() {
 
     }
@@ -30,8 +37,7 @@ public class LotApiMvcController {
     HttpEntity<String> createHeaderWithApiKey(String apiKey){
         final HttpHeaders header = new HttpHeaders();
         header.set("x-api-key", apiKey);
-        final HttpEntity<String> entity = new HttpEntity<>(header);
-        return entity;
+        return new HttpEntity<>(header);
     }
 
     @GetMapping("/categories/{language}") String getCategories(Model model, @PathVariable String language){
@@ -68,21 +74,26 @@ public class LotApiMvcController {
     }
 
     @PostMapping("/offer/detail/{lang}")
-    String fetchOfferDetails(Model model,@PathVariable(name="lang") String language,@RequestBody String ref_id)
-    {
+    String fetchOfferDetails(Model model,@PathVariable(name="lang") String language,@RequestBody String req_body){
+        System.out.println("no elooooo post ");
         HttpHeaders headers = new HttpHeaders();
         final String url=baseUrl+"/offer/detail/"+language;
+        System.out.println("request body:"+req_body);
+        String ref_id= Arrays.stream(req_body.replaceAll("%2F", "/").split("&")).filter(s->s.contains("ref_id")).collect(Collectors.joining()).replace("ref_id=","").trim();
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         System.out.println("final url:"+url);
+        System.out.println(ref_id);
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Accept","*/*");
         headers.set("x-api-key", apiKey);
         body.add("ref_id",ref_id);
         HttpEntity< MultiValueMap<String, String>> httpEntity = new HttpEntity<>(body,headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url,httpEntity,String.class);
         model.addAttribute("response",response.getBody());
-        System.out.println("length:"+response.getBody().length());
         System.out.println("status:"+response.getStatusCodeValue());
         System.out.println("body:"+response.getBody());
         return "offer-details";
     }
+
+
 }

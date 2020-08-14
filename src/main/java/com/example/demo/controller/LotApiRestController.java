@@ -29,8 +29,7 @@ public class LotApiRestController {
     HttpEntity<String> createHeaderWithApiKey(String apiKey){
         final HttpHeaders header = new HttpHeaders();
         header.set("x-api-key", apiKey);
-        final HttpEntity<String> entity = new HttpEntity<>(header);
-        return entity;
+        return new HttpEntity<>(header);
     }
 
     @GetMapping("/categories/{language}") String getCategories(@PathVariable String language){
@@ -40,7 +39,6 @@ public class LotApiRestController {
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, header, String.class);
         System.out.println(response.getBody());
         return response.getBody();
-        //return "categories";
     }
 
 
@@ -62,9 +60,7 @@ public class LotApiRestController {
         }
         System.out.println("final url:"+url);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, header, String.class);
-        System.out.println("dlugosc:"+response.getBody().length());
         return response.getBody();
-        //return "offers-list";
     }
 
    @PostMapping("/offer/detail/{lang}")
@@ -81,11 +77,9 @@ public class LotApiRestController {
         body.add("ref_id",ref_id);
         HttpEntity< MultiValueMap<String, String>> httpEntity = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url,httpEntity,String.class);
-        System.out.println("length:"+response.getBody().length());
         System.out.println("status:"+response.getStatusCodeValue());
         System.out.println("body:"+response.getBody());
         return response.getBody();
-       // return "offer-details";
     }
 
 

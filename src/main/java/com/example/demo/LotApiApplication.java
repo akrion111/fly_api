@@ -11,7 +11,7 @@ public class LotApiApplication {
 
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder builder) {
-		// Do any additional configuration here
+		System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
 		return builder.build();
 	}
 
