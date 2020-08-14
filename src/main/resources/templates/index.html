@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script type="text/javascript">
+
+    function assignURL(method_number){
+    switch (method_number) {
+  case '1':
+
+    break;
+  case '2':
+  case '3':
+    console.log('Mangoes and papayas are $2.79 a pound.');
+    break;
+  default:
+    console.log(`Something went wrong...`);
+    }
+  }
+
+    function setLanguage()
+    {
+     var form=event.target
+     var method_number=form.id.match(/\d+/)[0]
+
+     if(method_number==1)form.action='categories'
+     else if(method_number==2) form.action='offers/list'
+     else form.action='offer/detail'
+
+     var pl=  document.getElementById('pl'+method_number)
+     var en=  document.getElementById('en'+method_number)
+
+                if(pl.checked)
+                {
+                    form.action+='/'+pl.value
+                    form.submit()
+                }
+                else if(en.checked)
+                {
+                    form.action+='/'+en.value
+                    form.submit()
+                }
+                else
+                {
+                    alert("you must choose a language!")
+                    return false
+                }
+            if(method_number==2)
+            {
+            if(document.getElementById("limit")!=null){form.action+='/'+document.getElementById("limit").value}
+            else if(document.getElementById("offset")!=null){form.action+='/'+document.getElementById("offset").value}
+            form.submit()
+            }
+            if(method_number==3)
+            {
+            var formData  = new FormData()
+            var ref_id=document.getElementById('ref_id')
+            formData.append('ref_id',ref_id.value)
+            form.submit()
+            }
+
+    }
+</script>
+///////////////////////////////<br>
+JOB CATEGORIES:
+<form action="categories" method="get" id="form1" onsubmit="return setLanguage()">
+    <input class="form-check-input" type="radio" name="lang" id="pl1" value="pl">
+    <label class="form-check-label" for="pl1">polish</label>
+    <input class="form-check-input" type="radio" name="lang" id="en1" value="en">
+    <label class="form-check-label" for="en1">english</label><br>
+    <input type="submit" value="get categories" id="submit1" /><br>
+</form>
+///////////////////////////////<br>
+OFFERS LIST:
+<form action="offers/list" method="get" id="form2" onsubmit="return setLanguage()">
+    <input class="form-check-input" type="radio" name="lang" id="pl2" value="pl">
+    <label class="form-check-label" for="pl2">polish</label>
+    <input class="form-check-input" type="radio" name="lang" id="en2" value="en">
+    <label class="form-check-label" for="en2">english</label><br>
+    <label for="limit">limit:</label><br>
+    <input type="text" id="limit" name="limit"><br>
+    <label for="offset">offset:</label><br>
+    <input type="text" id="offset" name="offset"><br>
+    <input type="submit" value="get offers list" id="submit2" /><br>
+</form>
+///////////////////////////////<br>
+OFFER DETAILS:
+<form action="offer/detail" method="post" id="form3" onsubmit="return setLanguage()">
+    <input class="form-check-input" type="radio" name="lang" id="pl3" value="pl">
+    <label class="form-check-label" for="pl3">polish</label>
+    <input class="form-check-input" type="radio" name="lang" id="en3" value="en">
+    <label class="form-check-label" for="en3">english</label><br>
+    <label for="ref_id">ref_id:</label><br>
+    <input type="text" id="ref_id" name="ref_id" required><br>
+    <input type="submit" value="get offer details" id="submit3" /><br>
+</form>
+///////////////////////////////<br>
+
+
+</body>
+</html>
