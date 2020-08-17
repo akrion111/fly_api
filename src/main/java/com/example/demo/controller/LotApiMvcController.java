@@ -37,7 +37,7 @@ public class LotApiMvcController {
 
     @ExceptionHandler(RefIdException.class)
     public ResponseEntity<ErrorResponse> handleException( RefIdException exc) {
-        ErrorResponse error=new ErrorResponse(HttpStatus.NOT_FOUND.value(),"wrong 'ref_id' parameter!",System.currentTimeMillis());
+        ErrorResponse error=new ErrorResponse(HttpStatus.NOT_FOUND.value(),exc.getMessage(),System.currentTimeMillis());
         return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
     }
 
@@ -86,15 +86,13 @@ public class LotApiMvcController {
         String ref_id= Arrays.stream(req_body.replaceAll("%2F", "/").split("&")).filter(s->s.contains("ref_id")).collect(Collectors.joining()).replace("ref_id=","").trim();
         String body = "{\"ref_id\":"+"\""+ref_id+"\""+"}";
         System.out.println("final url:"+url);
-        System.out.println(ref_id);
+        System.out.println("ref_id:"+ref_id);
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Accept","*/*");
         headers.set("x-api-key", apiKey);
         HttpEntity<String> httpEntity = new HttpEntity<>(body,headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url,httpEntity,String.class);
-        System.out.println("reponse:"+response.getBody().length());
         String htmlResponse=htmlService.render(response.getBody());
-        System.out.println("html:"+htmlResponse);
         model.addAttribute("response",htmlResponse);
         return "offer-details";
     }
