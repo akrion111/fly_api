@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.example.demo.exception.ErrorResponse;
+import com.example.demo.exception.RefIdException;
+import com.example.demo.service.HtmlService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
@@ -14,21 +16,31 @@ import java.util.stream.Collectors;
 
 
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/")
 public class LotApiMvcController {
     private final String apiKey="zEiAS4E5pE3mFnaqIKn3s6kCxsgqHCKH9VB97I0f";
     private final String baseUrl="https://api.lot.com/hr/v3";
 
     @Autowired
     RestTemplate restTemplate;
+    @Autowired
+     HtmlService htmlService;
 
-    public LotApiMvcController() {
+    private LotApiMvcController() {
 
     }
-    @GetMapping(value ="/test")
+    @GetMapping(value ="/index")
     String testMvc(){
         return "index";
     }
+
+
+    @ExceptionHandler(RefIdException.class)
+    public ResponseEntity<ErrorResponse> handleException( RefIdException exc) {
+        ErrorResponse error=new ErrorResponse(HttpStatus.NOT_FOUND.value(),"wrong 'ref_id' parameter!",System.currentTimeMillis());
+        return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
+    }
+
 
 
     HttpEntity<String> createHeaderWithApiKey(String apiKey){
@@ -41,9 +53,7 @@ public class LotApiMvcController {
         final HttpEntity<String> header = createHeaderWithApiKey(apiKey);
         final String url=baseUrl+"/categories/"+language;
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, header, String.class);
-
         model.addAttribute("response",response.getBody());
-        System.out.println(response.getBody());
         return "categories";
     }
 
@@ -51,8 +61,7 @@ public class LotApiMvcController {
     @GetMapping(value = {"/offers/list/{lang}", "/offers/list/{lang}/{limit}","/offers/list/{lang}/{limit}/{offset}"})
     String getOffersList(Model model, @PathVariable(name="lang") String language
             ,@PathVariable(name="limit",required = false) Integer limit
-            ,@PathVariable(name="offset",required = false) Integer offset)
-    {
+            ,@PathVariable(name="offset",required = false) Integer offset) throws RefIdException {
         final HttpEntity<String> header = createHeaderWithApiKey(apiKey);
         String url=baseUrl+"/offers/list/"+language;
         if(limit!=null)
@@ -65,18 +74,15 @@ public class LotApiMvcController {
         }
         System.out.println("final url:"+url);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, header, String.class);
-        String htmlResponse= renderHtml(response.getBody());
+        String htmlResponse= htmlService.render(response.getBody());
         model.addAttribute("response",htmlResponse);
-        System.out.println("dlugosc:"+response.getBody());
         return "offers-list";
     }
 
     @PostMapping("/offer/detail/{lang}")
-    String fetchOfferDetails(Model model,@PathVariable(name="lang") String language,@RequestBody String req_body){
-        System.out.println("no elooooo post ");
+    String fetchOfferDetails(Model model,@PathVariable(name="lang") String language,@RequestBody String req_body) {
         HttpHeaders headers = new HttpHeaders();
         final String url=baseUrl+"/offer/detail/"+language;
-        System.out.println("request body:"+req_body);
         String ref_id= Arrays.stream(req_body.replaceAll("%2F", "/").split("&")).filter(s->s.contains("ref_id")).collect(Collectors.joining()).replace("ref_id=","").trim();
         String body = "{\"ref_id\":"+"\""+ref_id+"\""+"}";
         System.out.println("final url:"+url);
@@ -86,51 +92,11 @@ public class LotApiMvcController {
         headers.set("x-api-key", apiKey);
         HttpEntity<String> httpEntity = new HttpEntity<>(body,headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url,httpEntity,String.class);
-        String htmlResponse=renderHtml(response.getBody());
-        System.out.println("status:"+response.getStatusCodeValue());
-        System.out.println("body:"+response.getBody());
+        System.out.println("reponse:"+response.getBody().length());
+        String htmlResponse=htmlService.render(response.getBody());
+        System.out.println("html:"+htmlResponse);
         model.addAttribute("response",htmlResponse);
         return "offer-details";
     }
-
-    public String renderHtml( String jsonData ) {
-        return jsonToHtml( new JSONObject( jsonData ) );
-    }
-
-
-    private String jsonToHtml( Object obj ) {
-        StringBuilder html = new StringBuilder( );
-        try {
-            if (obj instanceof JSONObject) {
-                JSONObject jsonObject = (JSONObject)obj;
-                String[] keys = JSONObject.getNames( jsonObject );
-
-                html.append("<div class=\"json_object\">");
-
-                if (keys.length > 0) {
-                    for (String key : keys) {
-                        html.append("<div><span class=\"json_key\">")
-                                .append(key).append("</span> : ");
-                        Object val = jsonObject.get(key);
-                        html.append( jsonToHtml( val ) );
-                        html.append("</div>");
-                    }
-                }
-
-                html.append("</div>");
-
-            } else if (obj instanceof JSONArray) {
-                JSONArray array = (JSONArray)obj;
-                for ( int i=0; i < array.length( ); i++) {
-                    html.append( jsonToHtml( array.get(i) ) );
-                }
-            } else {
-                html.append( obj );
-            }
-        } catch (Exception e) { return e.getMessage(); }
-
-        return html.toString( );
-    }
-
 
 }
