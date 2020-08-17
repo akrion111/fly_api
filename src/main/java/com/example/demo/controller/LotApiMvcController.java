@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 
 @Controller
-@RequestMapping("/lol")
+@RequestMapping("/api")
 public class LotApiMvcController {
     private final String apiKey="zEiAS4E5pE3mFnaqIKn3s6kCxsgqHCKH9VB97I0f";
     private final String baseUrl="https://api.lot.com/hr/v3";
