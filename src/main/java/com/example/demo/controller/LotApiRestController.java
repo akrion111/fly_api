@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.http.*;
 import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
@@ -77,10 +79,58 @@ public class LotApiRestController {
         body.add("ref_id",ref_id);
         HttpEntity< MultiValueMap<String, String>> httpEntity = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url,httpEntity,String.class);
+        String htmlData=renderHtml(response.getBody());
         System.out.println("status:"+response.getStatusCodeValue());
         System.out.println("body:"+response.getBody());
         return response.getBody();
     }
 
+
+
+    public String renderHtml( String JsonData ) {
+        return jsonToHtml( new JSONObject( JsonData ) );
+    }
+
+
+    private String jsonToHtml( Object obj ) {
+        StringBuilder html = new StringBuilder( );
+
+        try {
+            if (obj instanceof JSONObject) {
+                JSONObject jsonObject = (JSONObject)obj;
+                String[] keys = JSONObject.getNames( jsonObject );
+
+                html.append("<div class=\"json_object\">");
+
+                if (keys.length > 0) {
+                    for (String key : keys) {
+                        // print the key and open a DIV
+                        html.append("<div><span class=\"json_key\">")
+                                .append(key).append("</span> : ");
+
+                        Object val = jsonObject.get(key);
+                        // recursive call
+                        html.append( jsonToHtml( val ) );
+                        // close the div
+                        html.append("</div>");
+                    }
+                }
+
+                html.append("</div>");
+
+            } else if (obj instanceof JSONArray) {
+                JSONArray array = (JSONArray)obj;
+                for ( int i=0; i < array.length( ); i++) {
+                    // recursive call
+                    html.append( jsonToHtml( array.get(i) ) );
+                }
+            } else {
+                // print the value
+                html.append( obj );
+            }
+        } catch (Exception e) { return e.getMessage(); }
+
+        return html.toString( );
+    }
 
 }

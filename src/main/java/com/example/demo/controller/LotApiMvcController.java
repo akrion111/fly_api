@@ -1,18 +1,15 @@
 package com.example.demo.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -68,7 +65,8 @@ public class LotApiMvcController {
         }
         System.out.println("final url:"+url);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, header, String.class);
-        model.addAttribute("response",response.getBody());
+        String htmlResponse= renderHtml(response.getBody());
+        model.addAttribute("response",htmlResponse);
         System.out.println("dlugosc:"+response.getBody());
         return "offers-list";
     }
@@ -80,19 +78,58 @@ public class LotApiMvcController {
         final String url=baseUrl+"/offer/detail/"+language;
         System.out.println("request body:"+req_body);
         String ref_id= Arrays.stream(req_body.replaceAll("%2F", "/").split("&")).filter(s->s.contains("ref_id")).collect(Collectors.joining()).replace("ref_id=","").trim();
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        String body = "{\"ref_id\":"+"\""+ref_id+"\""+"}";
         System.out.println("final url:"+url);
         System.out.println(ref_id);
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Accept","*/*");
         headers.set("x-api-key", apiKey);
-        body.add("ref_id",ref_id);
-        HttpEntity< MultiValueMap<String, String>> httpEntity = new HttpEntity<>(body,headers);
+        HttpEntity<String> httpEntity = new HttpEntity<>(body,headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url,httpEntity,String.class);
-        model.addAttribute("response",response.getBody());
+        String htmlResponse=renderHtml(response.getBody());
         System.out.println("status:"+response.getStatusCodeValue());
         System.out.println("body:"+response.getBody());
+        model.addAttribute("response",htmlResponse);
         return "offer-details";
+    }
+
+    public String renderHtml( String jsonData ) {
+        return jsonToHtml( new JSONObject( jsonData ) );
+    }
+
+
+    private String jsonToHtml( Object obj ) {
+        StringBuilder html = new StringBuilder( );
+        try {
+            if (obj instanceof JSONObject) {
+                JSONObject jsonObject = (JSONObject)obj;
+                String[] keys = JSONObject.getNames( jsonObject );
+
+                html.append("<div class=\"json_object\">");
+
+                if (keys.length > 0) {
+                    for (String key : keys) {
+                        html.append("<div><span class=\"json_key\">")
+                                .append(key).append("</span> : ");
+                        Object val = jsonObject.get(key);
+                        html.append( jsonToHtml( val ) );
+                        html.append("</div>");
+                    }
+                }
+
+                html.append("</div>");
+
+            } else if (obj instanceof JSONArray) {
+                JSONArray array = (JSONArray)obj;
+                for ( int i=0; i < array.length( ); i++) {
+                    html.append( jsonToHtml( array.get(i) ) );
+                }
+            } else {
+                html.append( obj );
+            }
+        } catch (Exception e) { return e.getMessage(); }
+
+        return html.toString( );
     }
 
 

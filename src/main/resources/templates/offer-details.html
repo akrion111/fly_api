@@ -2,10 +2,16 @@
 <html xmlns:th="https://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Lot API: offer details</title>
 </head>
 <body>
-OFFER DETAILS:
-<p th:text=${response}/>
+<div id="data">
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var html=/*[[${response}]]*/ 'nothing'
+    document.getElementById("data").innerHTML = html;
+    /*]]>*/
+</script>
+</div>
 </body>
 </html>

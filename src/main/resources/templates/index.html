@@ -7,21 +7,7 @@
 <body>
 <script type="text/javascript">
 
-    function assignURL(method_number){
-    switch (method_number) {
-  case '1':
-
-    break;
-  case '2':
-  case '3':
-    console.log('Mangoes and papayas are $2.79 a pound.');
-    break;
-  default:
-    console.log(`Something went wrong...`);
-    }
-  }
-
-    function setLanguage()
+    function setParameters()
     {
      var form=event.target
      var method_number=form.id.match(/\d+/)[0]
@@ -66,7 +52,7 @@
 </script>
 ///////////////////////////////<br>
 JOB CATEGORIES:
-<form action="categories" method="get" id="form1" onsubmit="return setLanguage()">
+<form action="categories" method="get" id="form1" onsubmit="return setParameters()">
     <input class="form-check-input" type="radio" name="lang" id="pl1" value="pl">
     <label class="form-check-label" for="pl1">polish</label>
     <input class="form-check-input" type="radio" name="lang" id="en1" value="en">
@@ -75,7 +61,7 @@ JOB CATEGORIES:
 </form>
 ///////////////////////////////<br>
 OFFERS LIST:
-<form action="offers/list" method="get" id="form2" onsubmit="return setLanguage()">
+<form action="offers/list" method="get" id="form2" onsubmit="return setParameters()">
     <input class="form-check-input" type="radio" name="lang" id="pl2" value="pl">
     <label class="form-check-label" for="pl2">polish</label>
     <input class="form-check-input" type="radio" name="lang" id="en2" value="en">
@@ -88,7 +74,7 @@ OFFERS LIST:
 </form>
 ///////////////////////////////<br>
 OFFER DETAILS:
-<form action="offer/detail" method="post" id="form3" onsubmit="return setLanguage()">
+<form action="offer/detail" method="post" id="form3" onsubmit="return setParameters()">
     <input class="form-check-input" type="radio" name="lang" id="pl3" value="pl">
     <label class="form-check-label" for="pl3">polish</label>
     <input class="form-check-input" type="radio" name="lang" id="en3" value="en">
